@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-orbius-navy: #0C1B2A;
+  --color-orbius-navy2: #132438;
+  --color-orbius-navy3: #1A2F45;
+  --color-orbius-gold: #C9A84C;
+  --color-orbius-goldLight: #DFC06A;
+  --color-orbius-goldDark: #A68B3A;
+  --color-orbius-white: #E8ECF0;
+  --color-orbius-gray100: #D0D7E0;
+  --color-orbius-gray300: #8A97A8;
+  --color-orbius-gray500: #5C6B7F;
+  --color-orbius-gray700: #2D3D50;
+  --color-orbius-green: #10B981;
+  --color-orbius-greenLight: #34D399;
+  --color-orbius-red: #EF4444;
+  --color-orbius-redLight: #F87171;
+  --font-outfit: var(--font-outfit);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0C1B2A;
+  color: #E8ECF0;
+  font-family: var(--font-outfit), sans-serif;
+}
+
+/* Prose styles for blog posts */
+.prose {
+  color: #D0D7E0;
+  max-width: 680px;
+  line-height: 1.8;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: #E8ECF0;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+
+.prose h1 { font-size: 2.25rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+
+.prose p { margin-bottom: 1.25em; }
+
+.prose a {
+  color: #C9A84C;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose a:hover { color: #DFC06A; }
+
+.prose strong {
+  color: #E8ECF0;
+  font-weight: 600;
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.5em;
+  margin-bottom: 1.25em;
+}
+.prose ul { list-style-type: disc; }
+.prose ol { list-style-type: decimal; }
+.prose li { margin-bottom: 0.5em; }
+
+.prose blockquote {
+  border-left: 3px solid #C9A84C;
+  padding-left: 1em;
+  font-style: italic;
+  color: #8A97A8;
+  margin: 1.5em 0;
+}
+
+.prose code {
+  background-color: #1A2F45;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.prose pre {
+  background-color: #1A2F45;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.prose img {
+  border-radius: 12px;
+  margin: 1.5em 0;
+}
+
+.prose hr {
+  border-color: #2D3D50;
+  margin: 2em 0;
+}

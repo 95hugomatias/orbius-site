@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import VideoHero from "@/components/VideoHero";
+import HeroMap from "@/components/HeroMap";
 import WorkGrid from "@/components/WorkGrid";
 import Manifesto from "@/components/Manifesto";
 import OrbisIcon from "@/components/OrbisIcon";
@@ -11,8 +11,8 @@ import WhatsAppCTA from "@/components/WhatsAppCTA";
 export default function HomePage() {
   return (
     <>
-      {/* Section 1: Hero Video */}
-      <VideoHero />
+      {/* Section 1: Hero Map */}
+      <HeroMap />
 
       {/* Section 2: Work Grid */}
       <WorkGrid />

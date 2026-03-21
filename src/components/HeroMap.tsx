@@ -13,9 +13,9 @@ const HIGHLIGHT_IDS: Record<string, { name: string; desc: string; year: string; 
 
 function getLabelOffset(key: string, isMobile: boolean): { dx: number; dy: number; anchor: string } {
   if (isMobile) {
-    if (key === "br") return { dx: 0, dy: 45, anchor: "middle" };
-    if (key === "pt") return { dx: 0, dy: 40, anchor: "middle" };
-    return { dx: 0, dy: -25, anchor: "middle" };
+    if (key === "br") return { dx: 15, dy: -15, anchor: "start" };
+    if (key === "pt") return { dx: -15, dy: -20, anchor: "end" };
+    return { dx: 15, dy: -15, anchor: "start" };
   }
   if (key === "br") return { dx: -10, dy: 50, anchor: "start" };
   if (key === "pt") return { dx: 0, dy: 45, anchor: "end" };
@@ -53,9 +53,9 @@ export default function HeroMap() {
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
     const projection = d3.geoNaturalEarth1()
-      .center([-20, 15])
-      .scale(width * (isMobile ? 0.35 : 0.28))
-      .translate([width / 2, height / 2]);
+      .center(isMobile ? [-15, 10] : [-20, 15])
+      .scale(width * (isMobile ? 0.55 : 0.28))
+      .translate([width / 2, isMobile ? height * 0.38 : height / 2]);
 
     const pathGenerator = d3.geoPath().projection(projection);
 
@@ -167,12 +167,12 @@ export default function HeroMap() {
             .attr("transform", `translate(${c[0]}, ${c[1]})`);
 
           // Outer
-          g.append("circle").attr("r", 30).attr("fill", "#C9A84C").attr("opacity", 0.06);
+          g.append("circle").attr("r", isMobile ? 20 : 30).attr("fill", "#C9A84C").attr("opacity", 0.06);
           // Medium
-          g.append("circle").attr("r", 18).attr("fill", "#C9A84C").attr("opacity", 0.1);
+          g.append("circle").attr("r", isMobile ? 12 : 18).attr("fill", "#C9A84C").attr("opacity", 0.1);
           // Inner (breathing)
           g.append("circle")
-            .attr("r", 5)
+            .attr("r", isMobile ? 4 : 5)
             .attr("fill", "#C9A84C")
             .attr("opacity", 0.8)
             .attr("class", `point-breathe point-breathe-${key}`);
@@ -250,7 +250,7 @@ export default function HeroMap() {
       />
 
       {/* Headline */}
-      <div className="hero-headline absolute bottom-[15%] sm:bottom-[18%] left-0 right-0 text-center px-4">
+      <div className="hero-headline absolute bottom-[100px] sm:bottom-[18%] left-0 right-0 text-center px-4">
         <h1
           className="font-outfit font-[900] text-orbius-white leading-[0.95]"
           style={{ letterSpacing: "-0.03em" }}

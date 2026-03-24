@@ -81,7 +81,7 @@ export default function HeroMap() {
       .geoNaturalEarth1()
       .center(isMobile ? [-18, 12] : [-20, 15])
       .scale(width * (isMobile ? 0.38 : 0.28))
-      .translate([width / 2, isMobile ? height * 0.38 : height * 0.40]);
+      .translate([width / 2, isMobile ? height * 0.32 : height * 0.33]);
 
     const pathGenerator = d3.geoPath().projection(projection);
 

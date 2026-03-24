@@ -5,13 +5,34 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 
-const HIGHLIGHT_IDS: Record<string, { name: string; desc: string; year: string; key: string }> = {
-  "076": { name: "BRASILE", desc: "Dove tutto è iniziato", year: "2018", key: "br" },
-  "620": { name: "PORTOGALLO", desc: "Dove siamo cresciuti", year: "2025", key: "pt" },
-  "380": { name: "ITALIA", desc: "Dove siamo adesso", year: "2026", key: "it" },
+const HIGHLIGHT_IDS: Record<
+  string,
+  { name: string; desc: string; year: string; key: string }
+> = {
+  "076": {
+    name: "BRASILE",
+    desc: "Dove tutto è iniziato",
+    year: "2018",
+    key: "br",
+  },
+  "620": {
+    name: "PORTOGALLO",
+    desc: "Dove siamo cresciuti",
+    year: "2025",
+    key: "pt",
+  },
+  "380": {
+    name: "ITALIA",
+    desc: "Dove siamo adesso",
+    year: "2026",
+    key: "it",
+  },
 };
 
-function getLabelOffset(key: string, isMobile: boolean): { dx: number; dy: number; anchor: string } {
+function getLabelOffset(
+  key: string,
+  isMobile: boolean
+): { dx: number; dy: number; anchor: string } {
   if (isMobile) {
     if (key === "br") return { dx: 10, dy: 40, anchor: "start" };
     if (key === "pt") return { dx: 0, dy: 35, anchor: "middle" };
@@ -23,8 +44,10 @@ function getLabelOffset(key: string, isMobile: boolean): { dx: number; dy: numbe
 }
 
 function quadBezier(
-  x0: number, y0: number,
-  x1: number, y1: number,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
   curvature: number
 ): string {
   const mx = (x0 + x1) / 2;
@@ -52,10 +75,11 @@ export default function HeroMap() {
 
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-    const projection = d3.geoNaturalEarth1()
+    const projection = d3
+      .geoNaturalEarth1()
       .center(isMobile ? [-18, 12] : [-20, 15])
       .scale(width * (isMobile ? 0.38 : 0.28))
-      .translate([width / 2, isMobile ? height * 0.42 : height / 2]);
+      .translate([width / 2, isMobile ? height * 0.40 : height * 0.45]);
 
     const pathGenerator = d3.geoPath().projection(projection);
 
@@ -88,11 +112,14 @@ export default function HeroMap() {
           .data(baseCountries)
           .enter()
           .append("path")
-          .attr("d", (d) => pathGenerator(d as d3.GeoPermissibleObjects) || "")
+          .attr(
+            "d",
+            (d) => pathGenerator(d as d3.GeoPermissibleObjects) || ""
+          )
           .attr("fill", "#0F1D2C")
           .attr("stroke", "#2D3D50")
           .attr("stroke-width", 0.3)
-          .attr("opacity", 0.25);
+          .attr("opacity", 0.3);
 
         // --- Highlight countries ---
         const hlGroup = root.append("g").attr("class", "map-highlights");
@@ -102,10 +129,13 @@ export default function HeroMap() {
 
           hlGroup
             .append("path")
-            .attr("d", pathGenerator(feature as d3.GeoPermissibleObjects) || "")
-            .attr("fill", "#0F1D2C")
-            .attr("stroke", "#2D3D50")
-            .attr("stroke-width", 0.5)
+            .attr(
+              "d",
+              pathGenerator(feature as d3.GeoPermissibleObjects) || ""
+            )
+            .attr("fill", "#152a3d")
+            .attr("stroke", "#3a5068")
+            .attr("stroke-width", 0.6)
             .attr("class", `country-hl country-${info.key}`);
         });
 
@@ -114,7 +144,9 @@ export default function HeroMap() {
         highlightCountries.forEach((feature) => {
           const info = HIGHLIGHT_IDS[feature.id as string];
           if (!info) return;
-          const centroid = d3.geoCentroid(feature as d3.GeoPermissibleObjects);
+          const centroid = d3.geoCentroid(
+            feature as d3.GeoPermissibleObjects
+          );
           const projected = projection(centroid);
           if (projected) {
             centroids[info.key] = projected;
@@ -126,8 +158,10 @@ export default function HeroMap() {
 
         if (centroids.br && centroids.pt) {
           const arcPath = quadBezier(
-            centroids.br[0], centroids.br[1],
-            centroids.pt[0], centroids.pt[1],
+            centroids.br[0],
+            centroids.br[1],
+            centroids.pt[0],
+            centroids.pt[1],
             -0.3
           );
           arcGroup
@@ -135,14 +169,16 @@ export default function HeroMap() {
             .attr("d", arcPath)
             .attr("class", "arc-trace arc-1")
             .attr("stroke", "#C9A84C")
-            .attr("stroke-width", 1)
-            .attr("opacity", 0.6);
+            .attr("stroke-width", 1.5)
+            .attr("opacity", 0.7);
         }
 
         if (centroids.pt && centroids.it) {
           const arcPath = quadBezier(
-            centroids.pt[0], centroids.pt[1],
-            centroids.it[0], centroids.it[1],
+            centroids.pt[0],
+            centroids.pt[1],
+            centroids.it[0],
+            centroids.it[1],
             -0.25
           );
           arcGroup
@@ -150,50 +186,74 @@ export default function HeroMap() {
             .attr("d", arcPath)
             .attr("class", "arc-trace arc-2")
             .attr("stroke", "#C9A84C")
-            .attr("stroke-width", 1)
-            .attr("opacity", 0.6);
+            .attr("stroke-width", 1.5)
+            .attr("opacity", 0.7);
         }
 
         // --- Layer 3b: Glows ---
+        // Use nested <g> elements: outer <g> has D3 position, inner <g> has CSS animation class
+        // This prevents CSS transform from overriding D3 translate
         const glowGroup = root.append("g").attr("class", "map-glows");
 
         (["br", "pt", "it"] as const).forEach((key) => {
           const c = centroids[key];
           if (!c) return;
 
-          const g = glowGroup
+          // Outer group: D3 positioning (transform: translate)
+          const posGroup = glowGroup
             .append("g")
-            .attr("class", `glow-group glow-${key}`)
             .attr("transform", `translate(${c[0]}, ${c[1]})`);
 
-          // Outer
-          g.append("circle").attr("r", isMobile ? 20 : 30).attr("fill", "#C9A84C").attr("opacity", 0.06);
-          // Medium
-          g.append("circle").attr("r", isMobile ? 12 : 18).attr("fill", "#C9A84C").attr("opacity", 0.1);
-          // Inner (breathing)
+          // Inner group: CSS animation (opacity only, no transform)
+          const g = posGroup
+            .append("g")
+            .attr("class", `glow-group glow-${key}`);
+
+          // Outer glow
+          g.append("circle")
+            .attr("r", isMobile ? 20 : 30)
+            .attr("fill", "#C9A84C")
+            .attr("opacity", 0.08);
+          // Medium glow
+          g.append("circle")
+            .attr("r", isMobile ? 12 : 18)
+            .attr("fill", "#C9A84C")
+            .attr("opacity", 0.15);
+          // Inner point (breathing)
           g.append("circle")
             .attr("r", isMobile ? 4 : 5)
             .attr("fill", "#C9A84C")
-            .attr("opacity", 0.8)
+            .attr("opacity", 0.9)
             .attr("class", `point-breathe point-breathe-${key}`);
         });
 
         // --- Layer 4: Labels ---
+        // Same nested <g> approach: outer for D3 position, inner for CSS animation
         const labelGroup = root.append("g").attr("class", "map-labels");
 
         (["br", "pt", "it"] as const).forEach((key) => {
           const c = centroids[key];
           if (!c) return;
 
-          const entry = Object.values(HIGHLIGHT_IDS).find((h) => h.key === key);
+          const entry = Object.values(HIGHLIGHT_IDS).find(
+            (h) => h.key === key
+          );
           if (!entry) return;
 
           const offset = getLabelOffset(key, isMobile);
 
-          const lg = labelGroup
+          // Outer group: D3 positioning (transform: translate)
+          const posGroup = labelGroup
             .append("g")
-            .attr("class", `map-label label-${key}`)
-            .attr("transform", `translate(${c[0] + offset.dx}, ${c[1] + offset.dy})`);
+            .attr(
+              "transform",
+              `translate(${c[0] + offset.dx}, ${c[1] + offset.dy})`
+            );
+
+          // Inner group: CSS animation (opacity only, no transform)
+          const lg = posGroup
+            .append("g")
+            .attr("class", `map-label label-${key}`);
 
           lg.append("text")
             .text(entry.name)
@@ -237,7 +297,7 @@ export default function HeroMap() {
       <svg
         ref={svgRef}
         className={`absolute inset-0 w-full h-full map-fade-in ${ready ? "map-visible" : ""}`}
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="none"
       />
 
       {/* Vignette overlay */}
@@ -250,7 +310,7 @@ export default function HeroMap() {
       />
 
       {/* Headline */}
-      <div className="hero-headline absolute bottom-[120px] sm:bottom-[18%] left-0 right-0 text-center px-4">
+      <div className="hero-headline absolute bottom-[120px] sm:bottom-[15%] left-0 right-0 text-center px-4">
         <h1
           className="font-outfit font-[900] text-orbius-white leading-[0.95]"
           style={{ letterSpacing: "-0.03em" }}
@@ -275,9 +335,9 @@ export default function HeroMap() {
         <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold/30" />
       </div>
 
-      {/* Animation styles */}
+      {/* Animation styles — IMPORTANT: no transform in label/glow animations
+          to avoid overriding D3's transform: translate() positioning */}
       <style jsx>{`
-        /* Map fade-in */
         .map-fade-in {
           opacity: 0;
           transition: opacity 0.5s ease-out;
@@ -286,7 +346,7 @@ export default function HeroMap() {
           opacity: 1;
         }
 
-        /* Country highlights */
+        /* Country highlights — safe: uses fill/stroke, not transform */
         :global(.country-hl) {
           transition: fill 1s ease, stroke 1s ease;
         }
@@ -302,34 +362,32 @@ export default function HeroMap() {
 
         @keyframes highlightCountry {
           to {
-            fill: #1a2f45;
-            stroke: rgba(201, 168, 76, 0.2);
-            stroke-width: 0.8px;
+            fill: #1e3a52;
+            stroke: rgba(201, 168, 76, 0.35);
+            stroke-width: 1px;
           }
         }
 
-        /* Glow groups */
+        /* Glow groups — opacity only, NO transform (position is on parent <g>) */
         :global(.glow-group) {
           opacity: 0;
         }
         :global(.glow-br) {
-          animation: fadeInGlow 0.8s ease-out 0.8s forwards;
+          animation: fadeInOpacity 0.8s ease-out 0.8s forwards;
         }
         :global(.glow-pt) {
-          animation: fadeInGlow 0.8s ease-out 3.8s forwards;
+          animation: fadeInOpacity 0.8s ease-out 3.8s forwards;
         }
         :global(.glow-it) {
-          animation: fadeInGlow 0.8s ease-out 6.3s forwards;
+          animation: fadeInOpacity 0.8s ease-out 6.3s forwards;
         }
 
-        @keyframes fadeInGlow {
+        @keyframes fadeInOpacity {
           from {
             opacity: 0;
-            transform: scale(0.8);
           }
           to {
             opacity: 1;
-            transform: scale(1);
           }
         }
 
@@ -357,7 +415,7 @@ export default function HeroMap() {
           }
         }
 
-        /* Arc tracing */
+        /* Arc tracing — safe: uses stroke-dashoffset, not transform */
         :global(.arc-trace) {
           stroke-dasharray: 2000;
           stroke-dashoffset: 2000;
@@ -376,24 +434,30 @@ export default function HeroMap() {
           }
         }
 
-        /* Labels */
+        /* Labels — opacity only, NO transform (position is on parent <g>) */
         :global(.map-label) {
           opacity: 0;
         }
         :global(.label-br) {
-          animation: fadeInUp 0.8s ease-out 1s forwards;
+          animation: fadeInOpacity 0.8s ease-out 1s forwards;
         }
         :global(.label-pt) {
-          animation: fadeInUp 0.8s ease-out 4s forwards;
+          animation: fadeInOpacity 0.8s ease-out 4s forwards;
         }
         :global(.label-it) {
-          animation: fadeInUp 0.8s ease-out 6.5s forwards;
+          animation: fadeInOpacity 0.8s ease-out 6.5s forwards;
+        }
+
+        /* Headline — this is a regular HTML div, transform is safe here */
+        .hero-headline {
+          opacity: 0;
+          animation: fadeInUp 1s ease-out 8s forwards;
         }
 
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(8px);
+            transform: translateY(15px);
           }
           to {
             opacity: 1;
@@ -401,27 +465,10 @@ export default function HeroMap() {
           }
         }
 
-        /* Headline */
-        .hero-headline {
-          opacity: 0;
-          animation: fadeInUp 1s ease-out 8s forwards;
-        }
-
         /* Scroll dots */
         .scroll-dots {
           opacity: 0;
-          animation: fadeInUp 0.6s ease-out 9s forwards,
-            scrollBounce 2s ease-in-out 9.5s infinite;
-        }
-
-        @keyframes scrollBounce {
-          0%,
-          100% {
-            transform: translateX(-50%) translateY(0);
-          }
-          50% {
-            transform: translateX(-50%) translateY(3px);
-          }
+          animation: fadeInUp 0.6s ease-out 9s forwards;
         }
       `}</style>
     </section>

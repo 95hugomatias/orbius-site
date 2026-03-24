@@ -19,7 +19,7 @@ function getLabelOffset(
   isMobile: boolean
 ): { dx: number; dy: number; anchor: string } {
   if (isMobile) {
-    if (key === "br") return { dx: -50, dy: -15, anchor: "end" };
+    if (key === "br") return { dx: 10, dy: -40, anchor: "start" };
     if (key === "pt") return { dx: 0, dy: 35, anchor: "middle" };
     return { dx: 15, dy: -30, anchor: "start" };
   }

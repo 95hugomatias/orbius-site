@@ -183,7 +183,7 @@ export default function RevealSection() {
         return (
           <div key={blockIndex}>
             <div
-              className={`reveal-block min-h-screen flex items-center justify-center ${bg}`}
+              className={`reveal-block min-h-[60vh] flex items-center justify-center ${bg}`}
               style={{ position: "relative" }}
             >
               <div className="w-full max-w-[1200px] px-6 sm:px-12 lg:px-20">
@@ -198,7 +198,7 @@ export default function RevealSection() {
 
             {block.showOrbisAfter && (
               <div
-                className={`flex items-center justify-center h-[50vh] ${bg}`}
+                className={`flex items-center justify-center h-[20vh] ${bg}`}
               >
                 <OrbisIcon size={64} color="#C9A84C" className="opacity-20" />
               </div>

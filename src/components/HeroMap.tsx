@@ -34,11 +34,11 @@ function getLabelOffset(
   isMobile: boolean
 ): { dx: number; dy: number; anchor: string } {
   if (isMobile) {
-    if (key === "br") return { dx: 10, dy: 40, anchor: "start" };
+    if (key === "br") return { dx: -50, dy: -15, anchor: "end" };
     if (key === "pt") return { dx: 0, dy: 35, anchor: "middle" };
     return { dx: 15, dy: -30, anchor: "start" };
   }
-  if (key === "br") return { dx: -10, dy: 50, anchor: "start" };
+  if (key === "br") return { dx: -70, dy: -10, anchor: "end" };
   if (key === "pt") return { dx: 0, dy: 45, anchor: "end" };
   return { dx: 25, dy: -25, anchor: "start" };
 }
@@ -79,7 +79,7 @@ export default function HeroMap() {
       .geoNaturalEarth1()
       .center(isMobile ? [-18, 12] : [-20, 15])
       .scale(width * (isMobile ? 0.38 : 0.28))
-      .translate([width / 2, isMobile ? height * 0.40 : height * 0.45]);
+      .translate([width / 2, isMobile ? height * 0.38 : height * 0.40]);
 
     const pathGenerator = d3.geoPath().projection(projection);
 

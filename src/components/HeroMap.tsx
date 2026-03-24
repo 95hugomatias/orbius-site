@@ -37,15 +37,15 @@ const T = {
 function getLayout(isMobile: boolean) {
   if (isMobile) {
     return {
-      br: { cx: 0.28, cy: 0.30, scale: 900, labelDx: 0, labelDy: -15, anchor: "middle" as const },
-      pt: { cx: 0.50, cy: 0.18, scale: 8000, labelDx: 0, labelDy: -12, anchor: "middle" as const },
-      it: { cx: 0.75, cy: 0.18, scale: 4000, labelDx: 0, labelDy: -12, anchor: "middle" as const },
+      br: { cx: 0.25, cy: 0.32, scale: 800, labelDx: 0, labelDy: -18, anchor: "middle" as const },
+      pt: { cx: 0.52, cy: 0.20, scale: 2800, labelDx: 0, labelDy: -14, anchor: "middle" as const },
+      it: { cx: 0.78, cy: 0.20, scale: 1800, labelDx: 0, labelDy: -14, anchor: "middle" as const },
     };
   }
   return {
-    br: { cx: 0.18, cy: 0.38, scale: 600, labelDx: 0, labelDy: -20, anchor: "middle" as const },
-    pt: { cx: 0.50, cy: 0.28, scale: 5500, labelDx: 0, labelDy: -15, anchor: "middle" as const },
-    it: { cx: 0.78, cy: 0.25, scale: 2800, labelDx: 0, labelDy: -18, anchor: "middle" as const },
+    br: { cx: 0.18, cy: 0.38, scale: 600, labelDx: 0, labelDy: -22, anchor: "middle" as const },
+    pt: { cx: 0.50, cy: 0.28, scale: 2200, labelDx: 0, labelDy: -18, anchor: "middle" as const },
+    it: { cx: 0.78, cy: 0.25, scale: 1400, labelDx: 0, labelDy: -20, anchor: "middle" as const },
   };
 }
 

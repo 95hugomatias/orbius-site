@@ -37,9 +37,9 @@ const T = {
 function getLayout(isMobile: boolean) {
   if (isMobile) {
     return {
-      br: { cx: 0.25, cy: 0.32, scale: 800, labelDx: 0, labelDy: -18, anchor: "middle" as const },
-      pt: { cx: 0.52, cy: 0.20, scale: 2800, labelDx: 0, labelDy: -14, anchor: "middle" as const },
-      it: { cx: 0.78, cy: 0.20, scale: 1800, labelDx: 0, labelDy: -14, anchor: "middle" as const },
+      br: { cx: 0.22, cy: 0.30, scale: 500, labelDx: 0, labelDy: -16, anchor: "middle" as const },
+      pt: { cx: 0.55, cy: 0.18, scale: 1600, labelDx: 0, labelDy: -12, anchor: "middle" as const },
+      it: { cx: 0.82, cy: 0.22, scale: 1000, labelDx: 0, labelDy: -12, anchor: "middle" as const },
     };
   }
   return {

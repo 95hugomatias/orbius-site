@@ -23,7 +23,7 @@ function getLabelOffset(
     if (key === "pt") return { dx: 0, dy: 35, anchor: "middle" };
     return { dx: 15, dy: -30, anchor: "start" };
   }
-  if (key === "br") return { dx: -70, dy: -10, anchor: "end" };
+  if (key === "br") return { dx: -70, dy: -40, anchor: "end" };
   if (key === "pt") return { dx: 0, dy: 45, anchor: "end" };
   return { dx: 25, dy: -25, anchor: "start" };
 }

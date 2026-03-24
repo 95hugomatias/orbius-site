@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import HeroMap from "@/components/HeroMap";
+import RevealSection from "@/components/RevealSection";
+import NarrativeSection from "@/components/NarrativeSection";
 import WorkGrid from "@/components/WorkGrid";
 import Manifesto from "@/components/Manifesto";
 import OrbisIcon from "@/components/OrbisIcon";
@@ -14,7 +16,27 @@ export default function HomePage() {
       {/* Section 1: Hero Map */}
       <HeroMap />
 
-      {/* Section 2: Work Grid */}
+      {/* Section 2: Reveal Text (scroll-driven fill effect) */}
+      <RevealSection />
+
+      {/* Section 3: La Nostra Visione */}
+      <NarrativeSection
+        titleSolid="LA NOSTRA"
+        titleOutline="VISIONE"
+        body="Crediamo che ogni attività meriti di brillare online. Non vendiamo follower o like — costruiamo presenze digitali che portano clienti reali. Dal Brasile al Portogallo all'Italia, il nostro approccio non cambia: strategia, creatività e risultati misurabili. Non è un discorso da agenzia. È ciò che facciamo ogni giorno."
+        bg="#0A1018"
+        showBackgroundIcon
+      />
+
+      {/* Section 4: I Nostri Lavori */}
+      <NarrativeSection
+        titleSolid="I NOSTRI"
+        titleOutline="LAVORI"
+        body="Il 73% degli italiani cerca un'attività su Instagram prima di visitarla. Se il tuo profilo non racconta chi sei davvero, stai perdendo clienti ogni giorno. Noi trasformiamo la tua presenza digitale in qualcosa che attira, convince e converte."
+        bg="#0C1B2A"
+      />
+
+      {/* Section 5: Work Grid */}
       <WorkGrid />
 
       {/* Section 3: Manifesto */}

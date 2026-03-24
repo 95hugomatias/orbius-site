@@ -9,24 +9,9 @@ const HIGHLIGHT_IDS: Record<
   string,
   { name: string; desc: string; year: string; key: string }
 > = {
-  "076": {
-    name: "BRASILE",
-    desc: "Dove tutto è iniziato",
-    year: "2018",
-    key: "br",
-  },
-  "620": {
-    name: "PORTOGALLO",
-    desc: "Dove siamo cresciuti",
-    year: "2025",
-    key: "pt",
-  },
-  "380": {
-    name: "ITALIA",
-    desc: "Dove siamo adesso",
-    year: "2026",
-    key: "it",
-  },
+  "076": { name: "BRASILE", desc: "Dove tutto è iniziato", year: "2018", key: "br" },
+  "620": { name: "PORTOGALLO", desc: "Dove siamo cresciuti", year: "2025", key: "pt" },
+  "380": { name: "ITALIA", desc: "Dove siamo adesso", year: "2026", key: "it" },
 };
 
 function getLabelOffset(
@@ -44,11 +29,7 @@ function getLabelOffset(
 }
 
 function quadBezier(
-  x0: number,
-  y0: number,
-  x1: number,
-  y1: number,
-  curvature: number
+  x0: number, y0: number, x1: number, y1: number, curvature: number
 ): string {
   const mx = (x0 + x1) / 2;
   const my = (y0 + y1) / 2;
@@ -59,10 +40,31 @@ function quadBezier(
   return `M ${x0},${y0} Q ${cx},${cy} ${x1},${y1}`;
 }
 
+// Animation timeline (milliseconds)
+const T = {
+  mapFade: 500,
+  brHighlight: 500,
+  brGlow: 800,
+  brLabel: 1000,
+  arc1Start: 1500,
+  arc1Duration: 2000,
+  ptHighlight: 3500,
+  ptGlow: 3800,
+  ptLabel: 4000,
+  arc2Start: 4800,
+  arc2Duration: 1500,
+  itHighlight: 6000,
+  itGlow: 6300,
+  itLabel: 6500,
+  headline: 8000,
+  scrollDots: 9000,
+};
+
 export default function HeroMap() {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
+  const [showHeadline, setShowHeadline] = useState(false);
+  const [showDots, setShowDots] = useState(false);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -90,53 +92,40 @@ export default function HeroMap() {
           topo,
           topo.objects.countries as GeometryCollection
         );
-
         const features = (countriesGeo as GeoJSON.FeatureCollection).features;
+        const baseCountries = features.filter((f) => !HIGHLIGHT_IDS[f.id as string]);
+        const highlightCountries = features.filter((f) => HIGHLIGHT_IDS[f.id as string]);
 
-        const baseCountries = features.filter(
-          (f) => !HIGHLIGHT_IDS[f.id as string]
-        );
-        const highlightCountries = features.filter(
-          (f) => HIGHLIGHT_IDS[f.id as string]
-        );
-
-        // Clear SVG
         d3.select(svg).selectAll("*").remove();
-
         const root = d3.select(svg);
 
-        // --- Layer 1: Base countries ---
-        const baseGroup = root.append("g").attr("class", "map-base");
-        baseGroup
+        // Fade in the whole SVG
+        d3.select(svg).style("opacity", "0")
+          .transition().duration(500).style("opacity", "1");
+
+        // --- Base countries ---
+        root.append("g")
           .selectAll("path")
           .data(baseCountries)
           .enter()
           .append("path")
-          .attr(
-            "d",
-            (d) => pathGenerator(d as d3.GeoPermissibleObjects) || ""
-          )
+          .attr("d", (d) => pathGenerator(d as d3.GeoPermissibleObjects) || "")
           .attr("fill", "#0F1D2C")
           .attr("stroke", "#2D3D50")
           .attr("stroke-width", 0.3)
           .attr("opacity", 0.3);
 
-        // --- Highlight countries ---
-        const hlGroup = root.append("g").attr("class", "map-highlights");
+        // --- Highlighted countries (start dark, animate brighter) ---
+        const hlPaths: Record<string, d3.Selection<SVGPathElement, unknown, null, undefined>> = {};
         highlightCountries.forEach((feature) => {
           const info = HIGHLIGHT_IDS[feature.id as string];
           if (!info) return;
-
-          hlGroup
-            .append("path")
-            .attr(
-              "d",
-              pathGenerator(feature as d3.GeoPermissibleObjects) || ""
-            )
+          const path = root.append("g").append("path")
+            .attr("d", pathGenerator(feature as d3.GeoPermissibleObjects) || "")
             .attr("fill", "#152a3d")
             .attr("stroke", "#3a5068")
-            .attr("stroke-width", 0.6)
-            .attr("class", `country-hl country-${info.key}`);
+            .attr("stroke-width", 0.6);
+          hlPaths[info.key] = path;
         });
 
         // --- Calculate centroids ---
@@ -144,116 +133,101 @@ export default function HeroMap() {
         highlightCountries.forEach((feature) => {
           const info = HIGHLIGHT_IDS[feature.id as string];
           if (!info) return;
-          const centroid = d3.geoCentroid(
-            feature as d3.GeoPermissibleObjects
-          );
+          const centroid = d3.geoCentroid(feature as d3.GeoPermissibleObjects);
           const projected = projection(centroid);
-          if (projected) {
-            centroids[info.key] = projected;
-          }
+          if (projected) centroids[info.key] = projected;
         });
 
-        // --- Layer 3: Arcs ---
-        const arcGroup = root.append("g").attr("class", "map-arcs");
+        // --- Animate country highlights ---
+        const hlTimings: Record<string, number> = {
+          br: T.brHighlight, pt: T.ptHighlight, it: T.itHighlight,
+        };
+        Object.entries(hlTimings).forEach(([key, delay]) => {
+          hlPaths[key]?.transition().delay(delay).duration(1000)
+            .attr("fill", "#1e3a52")
+            .attr("stroke", "rgba(201, 168, 76, 0.35)")
+            .attr("stroke-width", 1);
+        });
+
+        // --- Arcs (draw with stroke-dashoffset) ---
+        const arcGroup = root.append("g");
+
+        function drawArc(
+          from: [number, number], to: [number, number],
+          curvature: number, delay: number, duration: number
+        ) {
+          const arcPath = quadBezier(from[0], from[1], to[0], to[1], curvature);
+          const arc = arcGroup.append("path")
+            .attr("d", arcPath)
+            .attr("stroke", "#C9A84C")
+            .attr("stroke-width", 1.5)
+            .attr("opacity", 0.7)
+            .attr("fill", "none");
+
+          // Get the total length for dash animation
+          const totalLength = (arc.node() as SVGPathElement).getTotalLength();
+          arc
+            .attr("stroke-dasharray", totalLength)
+            .attr("stroke-dashoffset", totalLength)
+            .transition()
+            .delay(delay)
+            .duration(duration)
+            .ease(d3.easeQuadOut)
+            .attr("stroke-dashoffset", 0);
+        }
 
         if (centroids.br && centroids.pt) {
-          const arcPath = quadBezier(
-            centroids.br[0],
-            centroids.br[1],
-            centroids.pt[0],
-            centroids.pt[1],
-            -0.3
-          );
-          arcGroup
-            .append("path")
-            .attr("d", arcPath)
-            .attr("class", "arc-trace arc-1")
-            .attr("stroke", "#C9A84C")
-            .attr("stroke-width", 1.5)
-            .attr("opacity", 0.7);
+          drawArc(centroids.br, centroids.pt, -0.3, T.arc1Start, T.arc1Duration);
         }
-
         if (centroids.pt && centroids.it) {
-          const arcPath = quadBezier(
-            centroids.pt[0],
-            centroids.pt[1],
-            centroids.it[0],
-            centroids.it[1],
-            -0.25
-          );
-          arcGroup
-            .append("path")
-            .attr("d", arcPath)
-            .attr("class", "arc-trace arc-2")
-            .attr("stroke", "#C9A84C")
-            .attr("stroke-width", 1.5)
-            .attr("opacity", 0.7);
+          drawArc(centroids.pt, centroids.it, -0.25, T.arc2Start, T.arc2Duration);
         }
 
-        // --- Layer 3b: Glows ---
-        // Use nested <g> elements: outer <g> has D3 position, inner <g> has CSS animation class
-        // This prevents CSS transform from overriding D3 translate
-        const glowGroup = root.append("g").attr("class", "map-glows");
+        // --- Glows ---
+        const glowTimings: Record<string, number> = {
+          br: T.brGlow, pt: T.ptGlow, it: T.itGlow,
+        };
 
         (["br", "pt", "it"] as const).forEach((key) => {
           const c = centroids[key];
           if (!c) return;
 
-          // Outer group: D3 positioning (transform: translate)
-          const posGroup = glowGroup
-            .append("g")
-            .attr("transform", `translate(${c[0]}, ${c[1]})`);
+          const g = root.append("g")
+            .attr("transform", `translate(${c[0]}, ${c[1]})`)
+            .style("opacity", "0");
 
-          // Inner group: CSS animation (opacity only, no transform)
-          const g = posGroup
-            .append("g")
-            .attr("class", `glow-group glow-${key}`);
+          // Outer
+          g.append("circle").attr("r", isMobile ? 20 : 30)
+            .attr("fill", "#C9A84C").attr("opacity", 0.08);
+          // Medium
+          g.append("circle").attr("r", isMobile ? 12 : 18)
+            .attr("fill", "#C9A84C").attr("opacity", 0.15);
+          // Inner
+          g.append("circle").attr("r", isMobile ? 4 : 5)
+            .attr("fill", "#C9A84C").attr("opacity", 0.9);
 
-          // Outer glow
-          g.append("circle")
-            .attr("r", isMobile ? 20 : 30)
-            .attr("fill", "#C9A84C")
-            .attr("opacity", 0.08);
-          // Medium glow
-          g.append("circle")
-            .attr("r", isMobile ? 12 : 18)
-            .attr("fill", "#C9A84C")
-            .attr("opacity", 0.15);
-          // Inner point (breathing)
-          g.append("circle")
-            .attr("r", isMobile ? 4 : 5)
-            .attr("fill", "#C9A84C")
-            .attr("opacity", 0.9)
-            .attr("class", `point-breathe point-breathe-${key}`);
+          // Fade in glow
+          g.transition()
+            .delay(glowTimings[key])
+            .duration(800)
+            .style("opacity", "1");
         });
 
-        // --- Layer 4: Labels ---
-        // Same nested <g> approach: outer for D3 position, inner for CSS animation
-        const labelGroup = root.append("g").attr("class", "map-labels");
+        // --- Labels ---
+        const labelTimings: Record<string, number> = {
+          br: T.brLabel, pt: T.ptLabel, it: T.itLabel,
+        };
 
         (["br", "pt", "it"] as const).forEach((key) => {
           const c = centroids[key];
           if (!c) return;
-
-          const entry = Object.values(HIGHLIGHT_IDS).find(
-            (h) => h.key === key
-          );
+          const entry = Object.values(HIGHLIGHT_IDS).find((h) => h.key === key);
           if (!entry) return;
-
           const offset = getLabelOffset(key, isMobile);
 
-          // Outer group: D3 positioning (transform: translate)
-          const posGroup = labelGroup
-            .append("g")
-            .attr(
-              "transform",
-              `translate(${c[0] + offset.dx}, ${c[1] + offset.dy})`
-            );
-
-          // Inner group: CSS animation (opacity only, no transform)
-          const lg = posGroup
-            .append("g")
-            .attr("class", `map-label label-${key}`);
+          const lg = root.append("g")
+            .attr("transform", `translate(${c[0] + offset.dx}, ${c[1] + offset.dy})`)
+            .style("opacity", "0");
 
           lg.append("text")
             .text(entry.name)
@@ -282,9 +256,17 @@ export default function HeroMap() {
             .attr("opacity", 0.7)
             .attr("font-family", "var(--font-outfit), sans-serif")
             .attr("text-anchor", offset.anchor);
+
+          // Fade in label
+          lg.transition()
+            .delay(labelTimings[key])
+            .duration(800)
+            .style("opacity", "1");
         });
 
-        setReady(true);
+        // --- Show headline and dots via React state ---
+        setTimeout(() => setShowHeadline(true), T.headline);
+        setTimeout(() => setShowDots(true), T.scrollDots);
       });
   }, []);
 
@@ -296,7 +278,7 @@ export default function HeroMap() {
       {/* SVG Map */}
       <svg
         ref={svgRef}
-        className={`absolute inset-0 w-full h-full map-fade-in ${ready ? "map-visible" : ""}`}
+        className="absolute inset-0 w-full h-full"
         preserveAspectRatio="none"
       />
 
@@ -310,7 +292,11 @@ export default function HeroMap() {
       />
 
       {/* Headline */}
-      <div className="hero-headline absolute bottom-[120px] sm:bottom-[15%] left-0 right-0 text-center px-4">
+      <div
+        className={`absolute bottom-[120px] sm:bottom-[15%] left-0 right-0 text-center px-4 transition-all duration-1000 ${
+          showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
+      >
         <h1
           className="font-outfit font-[900] text-orbius-white leading-[0.95]"
           style={{ letterSpacing: "-0.03em" }}
@@ -329,119 +315,15 @@ export default function HeroMap() {
       </div>
 
       {/* Scroll indicator */}
-      <div className="scroll-dots absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold" />
+      <div
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5 transition-opacity duration-600 ${
+          showDots ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold animate-bounce" />
         <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold/30" />
         <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold/30" />
       </div>
-
-      {/* Component-scoped styles (HTML elements) */}
-      <style jsx>{`
-        .map-fade-in {
-          opacity: 0;
-          transition: opacity 0.5s ease-out;
-        }
-        .map-visible {
-          opacity: 1;
-        }
-        .hero-headline {
-          opacity: 0;
-          animation: heroFadeInUp 1s ease-out 8s forwards;
-        }
-        .scroll-dots {
-          opacity: 0;
-          animation: heroFadeInUp 0.6s ease-out 9s forwards;
-        }
-        @keyframes heroFadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
-      {/* Global styles for D3-created SVG elements */}
-      <style jsx global>{`
-        .country-hl {
-          transition: fill 1s ease, stroke 1s ease;
-        }
-        .country-br {
-          animation: hlCountry 1s ease-out 0.5s forwards;
-        }
-        .country-pt {
-          animation: hlCountry 1s ease-out 3.5s forwards;
-        }
-        .country-it {
-          animation: hlCountry 1s ease-out 6.0s forwards;
-        }
-        @keyframes hlCountry {
-          to {
-            fill: #1e3a52;
-            stroke: rgba(201, 168, 76, 0.35);
-            stroke-width: 1px;
-          }
-        }
-
-        .glow-group {
-          opacity: 0;
-        }
-        .glow-br {
-          animation: glowIn 0.8s ease-out 0.8s forwards;
-        }
-        .glow-pt {
-          animation: glowIn 0.8s ease-out 3.8s forwards;
-        }
-        .glow-it {
-          animation: glowIn 0.8s ease-out 6.3s forwards;
-        }
-        @keyframes glowIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .point-breathe {
-          animation: ptBreathe 4s ease-in-out infinite;
-        }
-        .point-breathe-br { animation-delay: 1.6s; }
-        .point-breathe-pt { animation-delay: 4.6s; }
-        .point-breathe-it { animation-delay: 7.1s; }
-        @keyframes ptBreathe {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
-        }
-
-        .arc-trace {
-          stroke-dasharray: 2000;
-          stroke-dashoffset: 2000;
-          fill: none;
-        }
-        .arc-1 {
-          animation: arcDraw 2s ease-out 1.5s forwards;
-        }
-        .arc-2 {
-          animation: arcDraw 1.5s ease-out 4.8s forwards;
-        }
-        @keyframes arcDraw {
-          to { stroke-dashoffset: 0; }
-        }
-
-        .map-label {
-          opacity: 0;
-        }
-        .label-br {
-          animation: glowIn 0.8s ease-out 1s forwards;
-        }
-        .label-pt {
-          animation: glowIn 0.8s ease-out 4s forwards;
-        }
-        .label-it {
-          animation: glowIn 0.8s ease-out 6.5s forwards;
-        }
-      `}</style>
     </section>
   );
 }

@@ -335,8 +335,7 @@ export default function HeroMap() {
         <div className="w-1.5 h-1.5 rounded-full bg-orbius-gold/30" />
       </div>
 
-      {/* Animation styles — IMPORTANT: no transform in label/glow animations
-          to avoid overriding D3's transform: translate() positioning */}
+      {/* Component-scoped styles (HTML elements) */}
       <style jsx>{`
         .map-fade-in {
           opacity: 0;
@@ -345,116 +344,15 @@ export default function HeroMap() {
         .map-visible {
           opacity: 1;
         }
-
-        /* Country highlights — safe: uses fill/stroke, not transform */
-        :global(.country-hl) {
-          transition: fill 1s ease, stroke 1s ease;
-        }
-        :global(.country-br) {
-          animation: highlightCountry 1s ease-out 0.5s forwards;
-        }
-        :global(.country-pt) {
-          animation: highlightCountry 1s ease-out 3.5s forwards;
-        }
-        :global(.country-it) {
-          animation: highlightCountry 1s ease-out 6.0s forwards;
-        }
-
-        @keyframes highlightCountry {
-          to {
-            fill: #1e3a52;
-            stroke: rgba(201, 168, 76, 0.35);
-            stroke-width: 1px;
-          }
-        }
-
-        /* Glow groups — opacity only, NO transform (position is on parent <g>) */
-        :global(.glow-group) {
-          opacity: 0;
-        }
-        :global(.glow-br) {
-          animation: fadeInOpacity 0.8s ease-out 0.8s forwards;
-        }
-        :global(.glow-pt) {
-          animation: fadeInOpacity 0.8s ease-out 3.8s forwards;
-        }
-        :global(.glow-it) {
-          animation: fadeInOpacity 0.8s ease-out 6.3s forwards;
-        }
-
-        @keyframes fadeInOpacity {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        /* Breathing points */
-        :global(.point-breathe) {
-          animation: breathe 4s ease-in-out infinite;
-        }
-        :global(.point-breathe-br) {
-          animation-delay: 1.6s;
-        }
-        :global(.point-breathe-pt) {
-          animation-delay: 4.6s;
-        }
-        :global(.point-breathe-it) {
-          animation-delay: 7.1s;
-        }
-
-        @keyframes breathe {
-          0%,
-          100% {
-            opacity: 0.5;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-
-        /* Arc tracing — safe: uses stroke-dashoffset, not transform */
-        :global(.arc-trace) {
-          stroke-dasharray: 2000;
-          stroke-dashoffset: 2000;
-          fill: none;
-        }
-        :global(.arc-1) {
-          animation: traceArc 2s ease-out 1.5s forwards;
-        }
-        :global(.arc-2) {
-          animation: traceArc 1.5s ease-out 4.8s forwards;
-        }
-
-        @keyframes traceArc {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-
-        /* Labels — opacity only, NO transform (position is on parent <g>) */
-        :global(.map-label) {
-          opacity: 0;
-        }
-        :global(.label-br) {
-          animation: fadeInOpacity 0.8s ease-out 1s forwards;
-        }
-        :global(.label-pt) {
-          animation: fadeInOpacity 0.8s ease-out 4s forwards;
-        }
-        :global(.label-it) {
-          animation: fadeInOpacity 0.8s ease-out 6.5s forwards;
-        }
-
-        /* Headline — this is a regular HTML div, transform is safe here */
         .hero-headline {
           opacity: 0;
-          animation: fadeInUp 1s ease-out 8s forwards;
+          animation: heroFadeInUp 1s ease-out 8s forwards;
         }
-
-        @keyframes fadeInUp {
+        .scroll-dots {
+          opacity: 0;
+          animation: heroFadeInUp 0.6s ease-out 9s forwards;
+        }
+        @keyframes heroFadeInUp {
           from {
             opacity: 0;
             transform: translateY(15px);
@@ -464,11 +362,84 @@ export default function HeroMap() {
             transform: translateY(0);
           }
         }
+      `}</style>
 
-        /* Scroll dots */
-        .scroll-dots {
+      {/* Global styles for D3-created SVG elements */}
+      <style jsx global>{`
+        .country-hl {
+          transition: fill 1s ease, stroke 1s ease;
+        }
+        .country-br {
+          animation: hlCountry 1s ease-out 0.5s forwards;
+        }
+        .country-pt {
+          animation: hlCountry 1s ease-out 3.5s forwards;
+        }
+        .country-it {
+          animation: hlCountry 1s ease-out 6.0s forwards;
+        }
+        @keyframes hlCountry {
+          to {
+            fill: #1e3a52;
+            stroke: rgba(201, 168, 76, 0.35);
+            stroke-width: 1px;
+          }
+        }
+
+        .glow-group {
           opacity: 0;
-          animation: fadeInUp 0.6s ease-out 9s forwards;
+        }
+        .glow-br {
+          animation: glowIn 0.8s ease-out 0.8s forwards;
+        }
+        .glow-pt {
+          animation: glowIn 0.8s ease-out 3.8s forwards;
+        }
+        .glow-it {
+          animation: glowIn 0.8s ease-out 6.3s forwards;
+        }
+        @keyframes glowIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .point-breathe {
+          animation: ptBreathe 4s ease-in-out infinite;
+        }
+        .point-breathe-br { animation-delay: 1.6s; }
+        .point-breathe-pt { animation-delay: 4.6s; }
+        .point-breathe-it { animation-delay: 7.1s; }
+        @keyframes ptBreathe {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+
+        .arc-trace {
+          stroke-dasharray: 2000;
+          stroke-dashoffset: 2000;
+          fill: none;
+        }
+        .arc-1 {
+          animation: arcDraw 2s ease-out 1.5s forwards;
+        }
+        .arc-2 {
+          animation: arcDraw 1.5s ease-out 4.8s forwards;
+        }
+        @keyframes arcDraw {
+          to { stroke-dashoffset: 0; }
+        }
+
+        .map-label {
+          opacity: 0;
+        }
+        .label-br {
+          animation: glowIn 0.8s ease-out 1s forwards;
+        }
+        .label-pt {
+          animation: glowIn 0.8s ease-out 4s forwards;
+        }
+        .label-it {
+          animation: glowIn 0.8s ease-out 6.5s forwards;
         }
       `}</style>
     </section>

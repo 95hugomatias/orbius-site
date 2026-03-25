@@ -81,7 +81,7 @@ export default function WorkGrid() {
   };
 
   return (
-    <section ref={ref} className="py-32 bg-orbius-navy">
+    <div ref={ref} className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Label */}
         <motion.div
@@ -138,13 +138,13 @@ export default function WorkGrid() {
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Link
-            href="/offerta"
+            href="/contatti"
             className="inline-flex items-center text-orbius-gold font-outfit font-medium text-sm hover:underline underline-offset-2 transition-all"
           >
             Tutti i lavori →
           </Link>
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 }

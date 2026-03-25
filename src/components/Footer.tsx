@@ -25,8 +25,8 @@ export default function Footer() {
               Home
             </Link>
             <span>·</span>
-            <Link href="/offerta" className="hover:text-orbius-gold transition-colors">
-              Offerta
+            <Link href="/#visione" className="hover:text-orbius-gold transition-colors">
+              Chi Siamo
             </Link>
             <span>·</span>
             <Link href="/blog" className="hover:text-orbius-gold transition-colors">

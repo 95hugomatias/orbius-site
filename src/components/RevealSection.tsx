@@ -6,22 +6,20 @@ import OrbisIcon from "./OrbisIcon";
 interface RevealLine {
   text: string;
   color: "gold" | "white";
-  /** If true, render as solid text (no outline/fill effect) */
   solid?: boolean;
-  /** Override font weight */
   weight?: number;
-  /** Override font size class */
   sizeClass?: string;
 }
 
 interface RevealBlock {
   lines: RevealLine[];
-  /** Show OrbisIcon between this block and the next */
+  align: "left" | "right";
   showOrbisAfter?: boolean;
 }
 
 const BLOCKS: RevealBlock[] = [
   {
+    align: "left",
     lines: [
       { text: "Non creiamo", color: "gold" },
       { text: "contenuti.", color: "gold" },
@@ -29,12 +27,14 @@ const BLOCKS: RevealBlock[] = [
     showOrbisAfter: true,
   },
   {
+    align: "right",
     lines: [
       { text: "Creiamo", color: "white" },
       { text: "clienti.", color: "white" },
     ],
   },
   {
+    align: "left",
     lines: [
       { text: "Pensiamo in", color: "gold" },
       { text: "strategia.", color: "gold" },
@@ -42,6 +42,7 @@ const BLOCKS: RevealBlock[] = [
     showOrbisAfter: true,
   },
   {
+    align: "right",
     lines: [
       {
         text: "Non in post.",
@@ -61,18 +62,17 @@ function RevealWord({
   solid,
   weight,
   sizeClass,
-}: RevealLine & { patternId: string }) {
+  align,
+}: RevealLine & { patternId: string; align: "left" | "right" }) {
   const fillColor = color === "gold" ? "#C9A84C" : "#E8ECF0";
   const strokeColor = color === "gold" ? "#C9A84C" : "#E8ECF0";
+  const textAnchor = align === "right" ? "end" : "start";
 
   if (solid) {
     return (
       <h3
         className={`reveal-text-wrapper ${sizeClass || ""}`}
-        style={{
-          fontWeight: weight || 800,
-          color: fillColor,
-        }}
+        style={{ fontWeight: weight || 800, color: fillColor }}
       >
         {text}
       </h3>
@@ -103,7 +103,6 @@ function RevealWord({
             >
               <rect
                 className="reveal-fill-rect"
-                data-fill-color={fillColor}
                 width="100%"
                 height="0%"
                 y="100%"
@@ -112,8 +111,9 @@ function RevealWord({
             </pattern>
           </defs>
           <text
-            x="0"
+            x={textAnchor === "end" ? "100%" : "0"}
             y="84%"
+            textAnchor={textAnchor}
             className="reveal-text-filled"
             style={{
               fill: `url(#${patternId})`,
@@ -137,7 +137,6 @@ export default function RevealSection() {
     if (!container) return;
 
     const sections = container.querySelectorAll<HTMLElement>(".reveal-block");
-
     let rafId: number;
 
     function updateFill() {
@@ -145,8 +144,6 @@ export default function RevealSection() {
 
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect();
-
-        // Progress: 0 when section enters viewport bottom, 1 when it exits top
         const progress = Math.max(
           0,
           Math.min(1, (windowHeight - rect.top) / (windowHeight + rect.height))
@@ -154,7 +151,6 @@ export default function RevealSection() {
 
         const fills = section.querySelectorAll<SVGRectElement>(".reveal-fill-rect");
         fills.forEach((fill, index) => {
-          // Stagger: each word fills with a slight delay
           const staggeredProgress = Math.max(
             0,
             Math.min(1, (progress - index * 0.05) / 0.5)
@@ -179,18 +175,28 @@ export default function RevealSection() {
       {BLOCKS.map((block, blockIndex) => {
         const isLastPair = blockIndex >= 2;
         const bg = isLastPair ? "bg-[#091520]" : "bg-[#0C1B2A]";
+        const alignClass =
+          block.align === "right"
+            ? "items-end text-right"
+            : "items-start text-left";
 
         return (
           <div key={blockIndex}>
             <div
-              className={`reveal-block min-h-[60vh] flex items-center justify-center ${bg}`}
-              style={{ position: "relative" }}
+              className={`reveal-block min-h-[60vh] flex items-center ${bg}`}
             >
-              <div className="w-full max-w-[1200px] px-6 sm:px-12 lg:px-20">
+              <div
+                className={`w-full flex flex-col ${alignClass} px-6 md:px-20`}
+              >
                 {block.lines.map((line) => {
                   const pid = `pattern-${uniqueId}-${patternCounter++}`;
                   return (
-                    <RevealWord key={pid} {...line} patternId={pid} />
+                    <RevealWord
+                      key={pid}
+                      {...line}
+                      patternId={pid}
+                      align={block.align}
+                    />
                   );
                 })}
               </div>
@@ -200,14 +206,13 @@ export default function RevealSection() {
               <div
                 className={`flex items-center justify-center h-[20vh] ${bg}`}
               >
-                <OrbisIcon size={64} color="#C9A84C" className="opacity-20" />
+                <OrbisIcon size={64} color="#C9A84C" className="opacity-15" />
               </div>
             )}
           </div>
         );
       })}
 
-      {/* Inline styles for the reveal effect */}
       <style jsx global>{`
         .reveal-text-wrapper {
           margin: 0;

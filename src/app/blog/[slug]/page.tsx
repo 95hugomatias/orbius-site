@@ -94,10 +94,10 @@ export default async function BlogPostPage({ params }: PageProps) {
               Scopri come possiamo aiutare la tua attività a crescere sui social media.
             </p>
             <Link
-              href="/offerta"
+              href="/contatti"
               className="inline-flex items-center gap-2 bg-orbius-gold text-orbius-navy px-6 py-3 rounded-xl font-bold hover:bg-orbius-goldLight transition-colors"
             >
-              Scopri l&apos;Offerta
+              Contattaci
             </Link>
           </div>
         </FadeIn>

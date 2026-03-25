@@ -247,7 +247,8 @@ export default function HeroMap() {
   return (
     <section
       ref={containerRef}
-      className="hero-map-section relative h-screen w-full overflow-hidden bg-orbius-navy"
+      className="hero-map-section relative h-screen w-full overflow-hidden"
+      style={{ backgroundColor: "#162A3A" }}
     >
       <svg
         ref={svgRef}
@@ -260,7 +261,7 @@ export default function HeroMap() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 70% at 50% 45%, transparent 20%, #0C1B2A 100%)",
+            "radial-gradient(ellipse 80% 70% at 50% 45%, transparent 20%, #162A3A 100%)",
         }}
       />
 

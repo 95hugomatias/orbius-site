@@ -10,8 +10,8 @@ interface NarrativeSectionProps {
   body: string;
   children?: React.ReactNode;
   bg?: string;
-  /** Show large decorative OrbisIcon in background */
   showBackgroundIcon?: boolean;
+  align?: "left" | "right";
 }
 
 export default function NarrativeSection({
@@ -21,6 +21,7 @@ export default function NarrativeSection({
   children,
   bg = "#0A1018",
   showBackgroundIcon = false,
+  align = "left",
 }: NarrativeSectionProps) {
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -36,29 +37,30 @@ export default function NarrativeSection({
     return () => observer.disconnect();
   }, []);
 
+  const isRight = align === "right";
+  const textAlign = isRight ? "text-right" : "text-left";
+  const itemsAlign = isRight ? "items-end" : "items-start";
+
   return (
     <section
       ref={ref}
       className="relative overflow-hidden"
       style={{ backgroundColor: bg }}
     >
-      {/* Background decorative icon */}
       {showBackgroundIcon && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <OrbisIcon
-            size={360}
-            color="#C9A84C"
-            className="opacity-[0.04]"
-          />
+          <OrbisIcon size={360} color="#C9A84C" className="opacity-[0.04]" />
         </div>
       )}
 
-      <div className="relative z-10 max-w-[860px] mx-auto px-6 sm:px-12 py-28 sm:py-36">
-        {/* Title */}
+      <div
+        className={`relative z-10 max-w-[860px] mx-auto px-6 sm:px-12 py-28 sm:py-36 flex flex-col ${itemsAlign}`}
+      >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
+          className={textAlign}
         >
           <h2
             className="font-outfit leading-[1.0] mb-0"
@@ -83,23 +85,21 @@ export default function NarrativeSection({
           </h2>
         </motion.div>
 
-        {/* Body */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-outfit font-light text-base leading-[1.7] text-[#8A97A8] max-w-[600px] mt-8"
+          className={`font-outfit font-light text-base leading-[1.7] text-[#8A97A8] max-w-[600px] mt-8 ${textAlign}`}
         >
           {body}
         </motion.p>
 
-        {/* Optional children (e.g., WorkGrid content) */}
         {children && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-16"
+            className="mt-16 w-full"
           >
             {children}
           </motion.div>
